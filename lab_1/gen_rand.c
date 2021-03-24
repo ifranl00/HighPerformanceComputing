@@ -25,9 +25,7 @@ int main(){
   
   /* Elaboration of the commands to set horizontal lines given a interval */
       char string_a[64];
-      char string_b[64];
       sprintf(string_a,"%lf",a); // string value of a 
-      sprintf(string_b,"%lf",b); // string value of b
 
       char commandArrowA[64] = "set arrow from graph 0,first "; // first part to set an arrow with gnuplot
       strcat(commandArrowA,string_a); // concat multiple times
@@ -37,20 +35,28 @@ int main(){
 
       printf("comando1: %s\n",commandArrowA);
 
-      char commandArrowB[64] = "set arrow from graph 0,first "; // first part to set an arrow with gnuplot
-      strcat(commandArrowB,string_b); //concat multiple times
-      strcat(commandArrowB," to graph 1,first ");
-      strcat(commandArrowB,string_b);
-      strcat(commandArrowB," nohead"); // finally we have "set arrow from graph 0,first b to graph 1,first b nohead"
+        char * autognuplot[4];// char array to execute gnuplot commands to plot first plot with the data of the random doubles.
+        autognuplot[0] = "set title \"Generating random double numbers\"";
+        autognuplot[1] = commandArrowA;
+        printf("\ncommandArrowA es %s\n",commandArrowA);
+        printf("\n Se ha guardado en autognuplo[1] el comando a: %s\n", autognuplot[1]);
 
-      printf("comando2: %s\n",commandArrowB);
+    char string_b[64];
+    sprintf(string_b,"%lf",b); // string value of b
+
+    char commandArrowB[64] = "set arrow from graph 0,first "; // first part to set an arrow with gnuplot
+    strcat(commandArrowB,string_b); //concat multiple times
+    strcat(commandArrowB," to graph 1,first ");
+    strcat(commandArrowB,string_b);
+    strcat(commandArrowB," nohead"); // finally we have "set arrow from graph 0,first b to graph 1,first b nohead"
+
+    printf("comando2: %s\n",commandArrowB);
+            printf("\ncommandArrowA despues es %s\n",commandArrowA);
+
   /* end of the elaboration of the commands to set horizontal lines of the interval a,b given */
-  
-  char * autognuplot[4];// char array to execute gnuplot commands to plot first plot with the data of the random doubles.
-    autognuplot[0] = "set title \"Generating random double numbers\"";
-    autognuplot[1] = commandArrowA;
-    autognuplot[2] = commandArrowB;
-    autognuplot[3] = "plot 'randomDouble.temp'";
+
+        autognuplot[2] = commandArrowB;
+        autognuplot[3] = "plot 'randomDouble.temp'";
 
 
   FILE *f = fopen("randomDouble.temp", "w");// Creation of the pointer to the file where the double random numbers are saved in colums
