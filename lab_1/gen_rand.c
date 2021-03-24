@@ -1,10 +1,11 @@
 #include<stdlib.h>
 #include<stdio.h>
+#include<string.h>
 #include<time.h>
 
 
 const int number = 20; // this number specify how many random numbers of int and double are going to be generated
-const int commands = 2; //number of commands to set the title and plot both int and double random numbers vs sequence numbers (2 plots)
+const int commands = 4; //number of commands to set the title and plot both int and double random numbers vs sequence numbers (2 plots)
 
 int main(){
 
@@ -21,8 +22,37 @@ int main(){
   printf("Insert two real numbers:\n"); //ask by console to insert 2 real numbers
   scanf("%lf %lf", &a, &b); // saved the values entered by console
   printf("\nRandom numbers from interval: %lf - %lf\n", a, b); //info about the interval generated printed by console
+  
+  /* Elaboration of the commands to set horizontal lines given a interval */
+      char string_a[64];
+      char string_b[64];
+      sprintf(string_a,"%lf",a); // string value of a 
+      sprintf(string_b,"%lf",b); // string value of b
 
-  char * autognuplot[] = {"set title \"Generating random double numbers\"", "plot 'randomDouble.temp'"}; // char array to execute gnuplot commands to plot first plot with the data of the random doubles.
+      char commandArrowA[64] = "set arrow from graph 0,first "; // first part to set an arrow with gnuplot
+      strcat(commandArrowA,string_a); // concat multiple times
+      strcat(commandArrowA," to graph 1,first ");
+      strcat(commandArrowA,string_a);
+      strcat(commandArrowA," nohead"); // finally we have "set arrow from graph 0,first a to graph 1,first a nohead"
+
+      printf("comando1: %s\n",commandArrowA);
+
+      char commandArrowB[64] = "set arrow from graph 0,first "; // first part to set an arrow with gnuplot
+      strcat(commandArrowB,string_b); //concat multiple times
+      strcat(commandArrowB," to graph 1,first ");
+      strcat(commandArrowB,string_b);
+      strcat(commandArrowB," nohead"); // finally we have "set arrow from graph 0,first b to graph 1,first b nohead"
+
+      printf("comando2: %s\n",commandArrowB);
+  /* end of the elaboration of the commands to set horizontal lines of the interval a,b given */
+  
+  char * autognuplot[4];// char array to execute gnuplot commands to plot first plot with the data of the random doubles.
+    autognuplot[0] = "set title \"Generating random double numbers\"";
+    autognuplot[1] = commandArrowA;
+    autognuplot[2] = commandArrowB;
+    autognuplot[3] = "plot 'randomDouble.temp'";
+
+
   FILE *f = fopen("randomDouble.temp", "w");// Creation of the pointer to the file where the double random numbers are saved in colums
   FILE * plot = popen ("gnuplot -persistent", "w"); // To create the first plot
 
@@ -51,12 +81,12 @@ int main(){
 #endif
 
   }
-
+  /*
   printf("\nInsert two integer numbers:\n");//ask by console to insert 2 integer numbers
   scanf("%d %d", &j, &k);// saved the values entered by console
   printf("\nRandom numbers from interval: %d - %d\n", j, k);//info about the interval generated printed by console
 
-  char * autognuplot2[] = {"set title \"Generating random int numbers\"","set arrow 1 from graph 0,first 0 to graph 1,first 0 nohead ","plot 'randomInt.temp'"}; // char array to execute gnuplot commands to plot second plot with the data of the random ints.
+  char * autognuplot2[] = {"set title \"Generating random int numbers\"","set arrow from graph 0,first 3 to graph 1,first 3 nohead","set arrow from graph 0,first 5 to graph 1,first 5 nohead","plot 'randomInt.temp'"}; // char array to execute gnuplot commands to plot second plot with the data of the random ints.
   FILE *f2 = fopen("randomInt.temp", "w");// Creation of the pointer to the file where the int random numbers are saved in colums
   FILE * plot2 = popen ("gnuplot -persistent", "w"); // To craete second plot
 
@@ -84,13 +114,14 @@ int main(){
     }
 #endif
   }
-
+*/
   for (i=0; i < commands; i++){
+    printf("Executing %d of 3 commands: %s\n",i,autognuplot[i]);
     fprintf(plot, "%s \n", autognuplot[i]); //Send commands to gnuplot one by one.
   }
-
+/*
   for (i=0; i < commands; i++){
-    fprintf(plot2, "%s \n", autognuplot2[i]); //Send commands to gnuplot one by one.
+    //fprintf(plot2, "%s \n", autognuplot2[i]); //Send commands to gnuplot one by one.
   }
-
+*/
 }
