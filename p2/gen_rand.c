@@ -107,7 +107,70 @@ int main(){
         }
         printf("\n");
       }
+
+  /*********** PART 3: Record created matrix in CRS (Compressed row storage)***********/
+      FILE *f = fopen("savedMatrix.txt", "w");// Creation of the pointer to the file where the int random numbers are saved in colums
+
+      if (f == NULL) { // exit the program if an error occured while creating the file
+            printf("Cannot create the file\n"); // message to info
+            exit(1);
+      }
+
+      // fprintf(f, "%d %d \n",axis_x[i],l); //Write the data to the file data.temp
+
+      struct csrFormat {
+        int countRows;
+        int *indexColumn;
+        int *indexRow;
+        int *val;
+      };
+
+      struct csrFormat m;
+      int c = 0;
+
+      m.countRows = a;
+      m.indexColumn = calloc(a*k, sizeof(m.indexColumn[0]));
+      m.indexRow = calloc(a, sizeof(m.indexRow[0]));
+      m.val = calloc(a*k, sizeof(m.val[0]));
+
+    for (int i = 0; i < a; i++)
+      {
+        for (int j = 0; j < a; j++)
+        {
+          if(matrix2[i][j]!= 0){
+            m.indexColumn[c] = j+1;
+            m.val[c] = matrix2[i][j];
+            c++;
+          }
+        }
+        m.indexRow[i] = c;
+      }
+
+    printf("\n ---- CSR FORMAT -----");
+    printf("\n Val: ");
+
+    for (int i = 0; i < a*k; i++)
+    {
+      printf("%d ",m.val[i]);
+    }
+
+    printf("\n col_in: ");
+
+    for (int i = 0; i < a*k; i++)
+    {
+      printf("%d ",m.indexColumn[i]);
+    }
+
+    printf("\n row_ptr: ");
+
+    for (int i = 0; i < a; i++)
+    {
+      printf("%d ",m.indexRow[i]);
+    }
 }
+
+
+/*********** functions ***********/
 
 int find(int array[], int element, int size) {
 
