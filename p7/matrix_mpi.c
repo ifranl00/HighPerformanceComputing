@@ -60,13 +60,14 @@ numworkers = size-1;
       printf("Program has started with %d processes.\n",size);
       printf("Initializing arrays...\n");
       srand(time(NULL));
-      for(i=0;i<N;i++)
-	for(j=0;j<N;j++)
-	{
-	    a[i][j]=rand()%1001/1000.*100;
-	    b[i][j]=rand()%1001/1000.*100;
-	}
-
+      for(i=0;i<N;i++){
+	      for(j=0;j<N;j++)
+	      {
+            a[i][j]=rand()%1001/1000.*100;
+            b[i][j]=rand()%1001/1000.*100;
+	      }
+      }
+      double start= MPI_Wtime();
       /* Send matrix data to the worker tasks */
       averow = N/numworkers;
       extra = N%numworkers;
@@ -75,31 +76,33 @@ numworkers = size-1;
       {
          rows = (dest <= extra) ? averow+1 : averow;   	//to compute rest of the division of matrix size by the numworkers
          printf("Sending %d rows to process %d offset=%d\n",rows,dest,offset);
+         //MPI procedure for sending the offset
+          MPI_Send(&offset,1,MPI_INT,dest,0,MPI_COMM_WORLD);
         //MPI procedure for sending the number of rows
           MPI_Send(&rows,1,MPI_INT,dest,0,MPI_COMM_WORLD);
-        //MPI procedure for sending the offset
-          MPI_Send(&offset,1,MPI_INT,dest,0,MPI_COMM_WORLD);
 	     //MPI procedure for sending rows from offset in "a" array
           MPI_Send(&a[offset][0],rows*N,MPI_DOUBLE,dest,0,MPI_COMM_WORLD);
          offset = offset + rows;
+         //MPI(group) procedure for sending the whole "b" array to all workers
+        MPI_Send(&b, N*N, MPI_DOUBLE, dest, 0, MPI_COMM_WORLD);
       }
+      //MPI_Bcast(&b,N*N, MPI_DOUBLE,0,MPI_COMM_WORLD); //another option
 
-        //MPI(group) procedure for sending the whole "b" array to all workers
-        MPI_Bcast(&b,N*N, MPI_DOUBLE,0,MPI_COMM_WORLD);
       /* Receive results from worker tasks */
       
       for (i=1; i<=numworkers; i++)
       {
          source = i;
     	 //MPI procedure for receiving an offset for the result array
-          MPI_Recv(&offset,1,MPI_INT,source,0,MPI_COMM_WORLD,&status);
+          MPI_Recv(&offset,1,MPI_INT,source,1,MPI_COMM_WORLD,&status);
 	    //MPI procedure for receiving a number of rows for the result array
-          MPI_Recv(&rows,1,MPI_INT,source,0,MPI_COMM_WORLD,&status);
+          MPI_Recv(&rows,1,MPI_INT,source,1,MPI_COMM_WORLD,&status);
 	    //MPI procedure for receiving rows from offset in "c" array
-          MPI_Recv(&c[offset][0],rows*N,MPI_DOUBLE,source,0,MPI_COMM_WORLD,&status);
+          MPI_Recv(&c[offset][0],rows*N,MPI_DOUBLE,source,1,MPI_COMM_WORLD,&status);
          printf("Received results from process %d\n",source);
       }
-
+      double end= MPI_Wtime();
+      printf("The time for multiplication with %d procceses is: %f\n",size,end-start);
       rc=test(a,b,c);
       if(rc==1)
 	printf("Error in matrix multiplification!\n");      
@@ -113,10 +116,11 @@ numworkers = size-1;
      //MPI procedure for receiving a number of rows for the "a" array
        MPI_Recv(&rows,1,MPI_INT,0,0,MPI_COMM_WORLD,&status);
      // MPI procedure for receiving rows from offset in "a" array
-       MPI_Recv(&a[offset][0],rows*N,MPI_DOUBLE,0,0,MPI_COMM_WORLD,&status);
+       MPI_Recv(&a,rows*N,MPI_DOUBLE,0,0,MPI_COMM_WORLD,&status);
 
        //MPI(group) procedure for receiving the whole "b" array
-        // no needed because the MPI call was broascast one
+        // no needed if it was a broadcast
+        MPI_Recv(&b,N*N,MPI_DOUBLE,0,0,MPI_COMM_WORLD,&status);
 
       for (k=0; k<N; k++)
          for (i=0; i<rows; i++)
@@ -127,11 +131,11 @@ numworkers = size-1;
          }
 
      //MPI procedure for sending an offset for the "c" array
-       MPI_Send(&offset,1,MPI_INT,0,0,MPI_COMM_WORLD);
+       MPI_Send(&offset,1,MPI_INT,0,1,MPI_COMM_WORLD);
      //MPI procedure for sending a number of rows for the "c" array
-       MPI_Send(&rows,1,MPI_INT,0,0,MPI_COMM_WORLD);
+       MPI_Send(&rows,1,MPI_INT,0,1,MPI_COMM_WORLD);
     //MPI procedure for sending computed rows of the "c" array
-       MPI_Send(&c,N*N,MPI_DOUBLE,0,0,MPI_COMM_WORLD);
+       MPI_Send(&c,rows*N,MPI_DOUBLE,0,1,MPI_COMM_WORLD);
    }
    MPI_Finalize();
 }
